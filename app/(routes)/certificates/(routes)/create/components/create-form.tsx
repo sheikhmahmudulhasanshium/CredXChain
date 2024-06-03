@@ -184,7 +184,7 @@ export function CreateForm() {
         </form>
         
       </Form>
-      <Progress value={progress} className="mt-12 bg-cyan-500" /> {/* Progress Bar */}
+      <Progress value={progress} className="my-12 bg-cyan-500" /> {/* Progress Bar */}
     </div>
   )
 }
