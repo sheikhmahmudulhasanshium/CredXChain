@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Progress } from "@/components/ui/progress"  // Import your Progress component
 
 const formSchema = z.object({
   fullName: z.string().min(2, { message: "Full Name must be at least 2 characters." }),
@@ -95,7 +96,7 @@ export function CreateForm() {
     console.log(data)
   }
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 7))
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, steps.length - 1))
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0))
 
   const renderFields = (fields: (keyof FormSchema)[]) => {
@@ -157,11 +158,14 @@ export function CreateForm() {
     },
   ];
 
+  const progress = ((step + 1) / steps.length) * 100;
+
   return (
-    <div className="w-full px-6 lg:px-24 md:px-20 sm:px-6">    
+    <div className="w-full px-6 lg:px-24 md:px-20 sm:px-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <h2 className="text-2xl font-bold">{steps[step].title}</h2>
+          
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             {renderFields(steps[step].fields)}
           </div>
@@ -178,7 +182,9 @@ export function CreateForm() {
             )}
           </div>
         </form>
+        
       </Form>
+      <Progress value={progress} className="mt-12 bg-cyan-500" /> {/* Progress Bar */}
     </div>
   )
 }
