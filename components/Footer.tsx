@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="flex justify-center items-center dark:bg-slate-100 flex-col text-blue-950 dark:bg-opacity-5 bg-slate-200 bg-opacity-15">
             <div className=" flex px-6 sm:px-6 md:px-8 lg:px-12">
                 <div className="grid grid-cols-2 justify-between space-x-8 pt-12 sm:space-x-8 md:space-x-10 lg:space-x-12 text-sm sm:text-base md:text-lg lg:text-lg">
-                    <Image src={Logo} alt="Logo" />
+                    <Link href="/"><Image src={Logo} alt="Logo" /></Link>
                     <p className="text-justify flex">
                     CredX, utilizing Hyperledger Fabric, securely and efficiently handles certificate creation, management, and verification. Blockchain technology ensures tamper-proof issuance and an immutable credential record, enhancing privacy, reducing fraud, and streamlining verification while building trust among stakeholders.
                     </p>

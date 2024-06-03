@@ -1,6 +1,6 @@
-"use client"
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 
@@ -42,17 +42,24 @@ const formSchema = z.object({
   nationality: z.string().min(1, { message: "* Nationality is required." }),
   quota: z.string().min(1, { message: "* Quota is required." }),
   documentLink: z.string().url({ message: "* Document link must be a valid URL." }).optional(),
-  
+
   institutionName: z.string().min(1, { message: "* Name of the Educational Institution is required." }),
   institutionEIIN: z.string().min(1, { message: "* EIIN no of the Educational Institution is required." }),
   institutionPostalCode: z.string().min(1, { message: "* Postal Code of the Educational Institution is required." }),
   institutionAddress: z.string().min(1, { message: "* Address is required." }),
   institutionContact: z.string().min(1, { message: "* Contact Information is required." }),
-  courseName: z.string().min(1, { message: "* Course Name is required." }),
-  courseCode: z.string().min(1, { message: "* Course Code is required." }),
-  courseDuration: z.string().min(1, { message: "* Duration of the Course is required." }),
-  courseStartDate: z.string().min(1, { message: "* Start Date is required." }),
-  courseEndDate: z.string().min(1, { message: "* End Date is required." }),
+
+  courses: z.array(z.object({
+    courseName: z.string().min(1, { message: "* Course Name is required." }),
+    courseCode: z.string().min(1, { message: "* Course Code is required." }),
+    courseDuration: z.string().min(1, { message: "* Duration of the Course is required." }),
+    courseStartDate: z.string().min(1, { message: "* Start Date is required." }),
+    courseEndDate: z.string().min(1, { message: "* End Date is required." }),
+    fullMark: z.string().min(1, { message: "* Full Mark is required." }),
+    obtainedMark: z.string().min(1, { message: "* Total Obtained Mark is required." }),
+    courseGPA: z.string().min(1, { message: "* Course GPA is required." }),
+  })).min(1, { message: "* At least one course is required." }),
+
   grades: z.string().min(1, { message: "* Grades or Marks are required." }),
   gpa: z.string().optional(),
   honors: z.string().optional(),
@@ -99,16 +106,15 @@ export function CreateForm() {
       nationality: "",
       quota: "",
       documentLink: "",
+
       institutionName: "",
       institutionEIIN: "",
       institutionPostalCode: "",
       institutionAddress: "",
       institutionContact: "",
-      courseName: "",
-      courseCode: "",
-      courseDuration: "",
-      courseStartDate: "",
-      courseEndDate: "",
+      
+      courses: [{ courseName: "", courseCode: "", courseDuration: "", courseStartDate: "", courseEndDate: "", fullMark: "", obtainedMark: "", courseGPA: "" }],
+      
       grades: "",
       gpa: "",
       honors: "",
@@ -125,11 +131,24 @@ export function CreateForm() {
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "courses",
+  });
+
   const onSubmit = (data: FormSchema) => {
     console.log(data);
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value as any);
+      if (Array.isArray(value)) {
+        value.forEach((v, i) => {
+          Object.entries(v).forEach(([k, val]) => {
+            formData.append(`${key}[${i}][${k}]`, val as any);
+          });
+        });
+      } else {
+        formData.append(key, value as any);
+      }
     });
     // Handle form submission (e.g., send formData to API)
   };
@@ -230,67 +249,163 @@ export function CreateForm() {
     ));
   };
 
+  const renderCourseFields = () => {
+    return fields.map((field, index) => (
+      <div key={field.id} className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className="col-span-2 flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Course {index + 1}</h3>
+          <Button type="button" onClick={() => remove(index)}>Remove Course</Button>
+        </div>
+        <div>
+          <FormLabel>Course Name</FormLabel>
+          <FormControl>
+            <Input placeholder="Enter Course Name" {...form.register(`courses.${index}.courseName`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.courseName && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.courseName?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Course Code</FormLabel>
+          <FormControl>
+            <Input placeholder="Enter Course Code" {...form.register(`courses.${index}.courseCode`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.courseCode && (
+            <p className="text-red-500             text-sm">{form.formState.errors.courses[index]?.courseCode?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Course Duration</FormLabel>
+          <FormControl>
+            <Input placeholder="Enter Course Duration" {...form.register(`courses.${index}.courseDuration`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.courseDuration && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.courseDuration?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Course Start Date</FormLabel>
+          <FormControl>
+            <Input type="date" {...form.register(`courses.${index}.courseStartDate`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.courseStartDate && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.courseStartDate?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Course End Date</FormLabel>
+          <FormControl>
+            <Input type="date" {...form.register(`courses.${index}.courseEndDate`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.courseEndDate && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.courseEndDate?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Full Mark</FormLabel>
+          <FormControl>
+            <Input placeholder="Enter Full Mark" {...form.register(`courses.${index}.fullMark`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.fullMark && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.fullMark?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Obtained Mark</FormLabel>
+          <FormControl>
+            <Input placeholder="Enter Obtained Mark" {...form.register(`courses.${index}.obtainedMark`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.obtainedMark && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.obtainedMark?.message as React.ReactNode}</p>
+          )}
+        </div>
+        <div>
+          <FormLabel>Course GPA</FormLabel>
+          <FormControl>
+            <Input placeholder="Enter Course GPA" {...form.register(`courses.${index}.courseGPA`)} />
+          </FormControl>
+          {form.formState.errors.courses?.[index]?.courseGPA && (
+            <p className="text-red-500 text-sm">{form.formState.errors.courses[index]?.courseGPA?.message as React.ReactNode}</p>
+          )}
+        </div>
+      </div>
+    ));
+  };
+
   const steps = [
     {
-      title: "Student Information",
-      fields: ["profileImage", "fullName", "dateOfBirth", "studentId", "medium", "regestrationId", "birthRegestrationNo", "nidNo", "gender", "bloodGroup", "religion","presentAddress", "permanentAddress", "nationality", "quota", ...(showDocumentField ? ["documentLink"] : [])] as (keyof FormSchema)[],
+      title: "Personal Information",
+      fields: [
+        "profileImage",
+        "fullName",
+        "dateOfBirth",
+        "studentId",
+        "regestrationId",
+        "birthRegestrationNo",
+        "nidNo",
+        "bloodGroup",
+        "religion",
+        "gender",
+        "medium",
+        "presentAddress",
+        "permanentAddress",
+        "nationality",
+        "quota",
+        "documentLink",
+      ],
     },
     {
-      title: "Institution Details",
-      fields: ["institutionName", "institutionEIIN", "institutionPostalCode", "institutionAddress", "institutionContact"] as (keyof FormSchema)[],
+      title: "Institution Information",
+      fields: [
+        "institutionName",
+        "institutionEIIN",
+        "institutionPostalCode",
+        "institutionAddress",
+        "institutionContact",
+      ],
     },
     {
-      title: "Course Details",
-      fields: ["courseName", "courseCode", "courseDuration", "courseStartDate", "courseEndDate"] as (keyof FormSchema)[],
+      title: "Courses",
+      fields: [],
     },
     {
-      title: "Academic Performance",
-      fields: ["grades", "gpa", "honors"] as (keyof FormSchema)[],
-    },
-    {
-      title: "Certificate Information",
-      fields: ["certificateNumber", "issuanceDate", "expiryDate"] as (keyof FormSchema)[],
-    },
-    {
-      title: "Signatory Details",
-      fields: ["signatories", "signatures"] as (keyof FormSchema)[],
-    },
-    {
-      title: "Official Logos and Seals",
-      fields: ["institutionLogo", "institutionSeal"] as (keyof FormSchema)[],
-    },
-    {
-      title: "Additional Information",
-      fields: ["accreditationDetails", "qrCode", "legalStatements"] as (keyof FormSchema)[],
+      title: "Academic Details",
+      fields: [
+        "grades",
+        "gpa",
+        "honors",
+        "certificateNumber",
+        "issuanceDate",
+        "expiryDate",
+        "signatories",
+        "signatures",
+        "institutionLogo",
+        "institutionSeal",
+        "accreditationDetails",
+        "qrCode",
+        "legalStatements",
+      ],
     },
   ];
 
-  const progress = ((step + 1) / steps.length) * 100;
-
   return (
-    <div className="w-full px-6 lg:px-24 md:px-20 sm:px-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <h2 className="text-2xl font-bold">{steps[step].title}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-            {renderFields(steps[step].fields)}
-          </div>
-          <div className="flex justify-between px-12">
-            <Button type="button" onClick={prevStep} disabled={step === 0}>
-              Previous
-            </Button>
-            {step < steps.length - 1 ? (
-              <Button type="button" onClick={nextStep}>
-                Next
-              </Button>
-            ) : (
-              <Button type="submit">Submit</Button>
-            )}
-          </div>
-        </form>
-      </Form>
-      <Progress value={progress} className="my-12 bg-cyan-500" />
-    </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+          {renderFields(steps[step].fields as (keyof FormSchema)[])}
+          {step === 2 && renderCourseFields()}
+        </div>
+        <div className="mt-4 flex justify-between">
+          <Button type="button" onClick={prevStep} disabled={step === 0}>
+            Previous
+          </Button>
+          <Button type="button" onClick={nextStep} disabled={step === steps.length - 1}>
+            Next
+          </Button>
+          {step === steps.length - 1 && <Button type="submit">Submit</Button>}
+        </div>
+        <Progress value={(step / (steps.length - 1)) * 100} className="mt-4" />
+      </form>
+    </Form>
   );
 }
-
