@@ -212,7 +212,7 @@ export function CreateForm() {
                       <SelectItem value="Physically Disabled Quota">Physically Disabled Quota</SelectItem>
                       <SelectItem value="Female Quota">Female Quota</SelectItem>
                       <SelectItem value="Minority Quota">Minority Quota</SelectItem>
-                      <SelectItem value="Teacher&apos;s Children Quota">Teacher's Children Quota</SelectItem>
+                      <SelectItem value="Teacher&apos;s Children Quota">Teacher&apos;s Children Quota</SelectItem>
                       <SelectItem value="Ward Quota">Ward Quota</SelectItem>
                     </>
                   )}
